@@ -21,11 +21,11 @@ WordPress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/pr
 == Changelog ==
 
 = 1.2 =
-* Smarter appearance of buttons: if post doesn't contain "more" tag, they will appear both on single post page and on page with multiple posts
-* English and Russian tooltips for share buttons depending on language of current page/post
+ * Smarter appearance of buttons: if post doesn't contain "more" tag, they will appear both on single post page and on page with multiple posts
+ * English and Russian tooltips for share buttons depending on language of current page/post
 
 = 1.1 =
-* Commands for adding buttons to existing posts and/or pages
+ * Commands for adding buttons to existing posts and/or pages
 
 = 1.0 =
-* First release
+ * First release
