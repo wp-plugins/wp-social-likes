@@ -2,7 +2,7 @@
 /*
 Plugin Name: Social Likes
 Description: Wordpress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/projects/social-likes)
-Version: 1.1
+Version: 1.2
 Author: TS Soft
 Author URI: http://ts-soft.ru/en/
 License: MIT
@@ -32,6 +32,26 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 class wpsociallikes
 {
+	var $ru_titles = array(
+		"Поделиться ссылкой во Вконтакте", 
+		"Поделиться ссылкой на Фейсбуке", 
+		"Поделиться ссылкой в Твиттере",
+		"Поделиться ссылкой в Гугл-плюсе",
+		"Поделиться картинкой на Пинтересте",
+		"Поделиться ссылкой в ЖЖ",
+		"Поделиться ссылкой в Одноклассниках",
+		"Поделиться ссылкой в Моём мире"
+	);
+					
+	var $en_titles = array(
+		"Share link on VK",
+		"Share link on Facebook",
+		"Share link on Twitter",
+		"Share link on Google+",
+		"Share image on Pinterest",
+		"Share link on LiveJournal"
+	);
+					
 	function wpsociallikes() 
 	{	
 		add_option('vk_btn', true);		
@@ -51,8 +71,8 @@ class wpsociallikes
 		add_option('pos7', 'odn_btn');
 		add_option('pos8', 'mm_btn');
 		add_option('sociallikes_twitter_via');	
-		add_option('sociallikes_twitter_rel');	
-		add_option('sociallikes_ul', '<ul class="social-likes"><li class="vkontakte" title="Поделиться ссылкой во Вконтакте">Вконтакте</li><li class="facebook" title="Поделиться ссылкой на Фейсбуке">Facebook</li><li class="twitter" title="Поделиться ссылкой в Твиттере">Twitter</li><li class="plusone" title="Поделиться ссылкой в Гугл-плюсе">Google+</li></ul>');
+		add_option('sociallikes_twitter_rel');
+		add_option('sociallikes_ul', '<ul class="social-likes"><li class="vkontakte">Вконтакте</li><li class="facebook">Facebook</li><li class="twitter">Twitter</li><li class="plusone">Google+</li></ul>');
 		
 		add_option('sociallikes_post', true);	
 		add_option('sociallikes_page', false);	
@@ -163,15 +183,26 @@ class wpsociallikes
 	}
 	
 	function add_social_likes($content='') {
-		global $post;
-		
-		if ((is_page() || is_single()) && get_post_meta($post->ID, 'sociallikes', true))
+		global $post, $page, $pages;
+		$post_content = $pages[$page-1];
+		if ((is_page() || is_single() || !preg_match('/<!--more(.*?)?-->/', $post_content, $matches)) && get_post_meta($post->ID, 'sociallikes', true))
 		{
 			$buttons = get_option('sociallikes_ul');
 			$img_url = get_post_meta($post->ID, 'sociallikes_img_url', true);
-			if ($img_url != '') {
+			if (strstr($buttons, 'Pinterest') && $img_url != '') {
 				$parts = explode('data-media="', $buttons);
 				$buttons = $parts[0] . 'data-media="' . $img_url . $parts[1];
+			}
+			if (!is_single() && !is_page()) {
+				$buttons = str_replace('class="social-likes"', 'class="social-likes" data-url="'.get_permalink( $post->ID ).'"', $buttons);
+			}
+			if ( get_bloginfo('language') != 'ru-RU')
+			{
+				$buttons = str_replace($this->ru_titles, $this->en_titles, $buttons);
+			}
+			else
+			{
+				$buttons = str_replace($this->en_titles, $this->ru_titles, $buttons);
 			}
 			$content .= $buttons;
 		}
@@ -191,17 +222,28 @@ class wpsociallikes
 		if (isset($_POST['submit']) || isset($_POST['apply_to_posts']) || isset($_POST['apply_to_pages'])) {
 			$positions	= $_POST['site'];
 			$buttons = array('vk_btn', 'facebook_btn', 'twitter_btn', 'google_btn', 'pinterest_btn', 'lj_btn', 'odn_btn', 'mm_btn');
-		
-			$li['vk_btn'] = '<li class="vkontakte" title="Поделиться ссылкой во Вконтакте">Вконтакте</li>';
-			$li['facebook_btn'] = '<li class="facebook" title="Share link on Facebook">Facebook</li>';
-			$li['twitter_btn_part1'] = '<li class="twitter" ';
-			$li['twitter_btn_part2'] = 'title="Share link on Twitter">Twitter</li>';
-			$li['google_btn'] = '<li class="plusone" title="Share link on Google+">Google+</li>';
-			$li['pinterest_btn'] = '<li class="pinterest" title="Share image on Pinterest" data-media="">Pinterest</li>';
-			$li['lj_btn'] = '<li class="livejournal" title="Share link on LiveJournal">LiveJournal</li>';
-			$li['odn_btn'] = '<li class="odnoklassniki" title="Поделиться ссылкой в Одноклассниках">Одноклассники</li>';
-			$li['mm_btn'] = '<li class="mailru" title="Поделиться ссылкой в Моём мире">Мой мир</li>';
-
+			$ru_titles = $this -> ru_titles;
+			$en_titles = $this -> en_titles;
+			if (get_bloginfo('language') == 'ru-RU') {
+				$li['vk_btn'] = '<li class="vkontakte" title="'.$ru_titles[0].'">Вконтакте</li>';
+				$li['facebook_btn'] = '<li class="facebook" title="'.$ru_titles[1].'">Facebook</li>';
+				$li['twitter_btn_part1'] = '<li class="twitter" ';
+				$li['twitter_btn_part2'] = 'title="'.$ru_titles[2].'">Twitter</li>';
+				$li['google_btn'] = '<li class="plusone" title="'.$ru_titles[3].'">Google+</li>';
+				$li['pinterest_btn'] = '<li class="pinterest" title="'.$ru_titles[4].'" data-media="">Pinterest</li>';
+				$li['lj_btn'] = '<li class="livejournal" title="'.$ru_titles[5].'">LiveJournal</li>';
+				$li['odn_btn'] = '<li class="odnoklassniki" title="'.$ru_titles[6].'">Одноклассники</li>';
+				$li['mm_btn'] = '<li class="mailru" title="'.$ru_titles[7].'">Мой мир</li>';
+			} else {
+				$li['vk_btn'] = '<li class="vkontakte" title="'.$en_titles[0].'">Вконтакте</li>';
+				$li['facebook_btn'] = '<li class="facebook" title="'.$en_titles[1].'">Facebook</li>';
+				$li['twitter_btn_part1'] = '<li class="twitter" ';
+				$li['twitter_btn_part2'] = 'title="'.$en_titles[2].'">Twitter</li>';
+				$li['google_btn'] = '<li class="plusone" title="'.$en_titles[3].'">Google+</li>';
+				$li['pinterest_btn'] = '<li class="pinterest" title="'.$en_titles[4].'" data-media="">Pinterest</li>';
+				$li['lj_btn'] = '<li class="livejournal" title="'.$en_titles[5].'">LiveJournal</li>';	
+			}
+			
 			$pos_count = count($positions);
 			
 			foreach ($buttons as $value) {
@@ -224,7 +266,11 @@ class wpsociallikes
 			} elseif ($_POST['look'] == 'v') {
 				$new_ul .= ' social-likes_vertical"';
 			} else {
-				$new_ul .= ' social-likes_single" data-single-title="Поделиться"';
+				if (get_bloginfo('language') == 'ru-RU') {
+					$new_ul .= ' social-likes_single" data-single-title="Поделиться"';
+				} else {
+					$new_ul .= ' social-likes_single" data-single-title="Share"';
+				}
 			}
 			
 			if (!isset($_POST['counters'])) {
@@ -289,8 +335,10 @@ class wpsociallikes
 		$label["google_btn"] = "Google+";
 		$label["pinterest_btn"] = "Pinterest";
 		$label["lj_btn"] = "LiveJournal";
-		$label["odn_btn"] = "Одноклассники";
-		$label["mm_btn"] = "Moй мир";
+		if (get_bloginfo('language') == 'ru-RU') { 
+			$label["odn_btn"] = "Одноклассники";
+			$label["mm_btn"] = "Moй мир";
+		}
 		
 		?>
 			<div class="wrap">
@@ -330,14 +378,12 @@ class wpsociallikes
 											$option = 'pos' . $i;
 											$btn = get_option($option);
 											$checked = get_option($btn);
-											if (!(($btn == 'odn_btn' || $btn == 'mm_btn') && get_bloginfo('language') != 'ru-RU')) {
-												?>
-												<li class="sortable-item">
-													<input type="checkbox" name="site[]" id="<?php echo $btn ?>" value="<?php echo $btn ?>" <?php if ($checked) echo 'checked' ?> />					
-													<label for="<?php echo $btn ?>" class="wpsl-label"><?php echo $label[$btn] ?></label>
-												</li>				
-												<?php
-											}
+											?>
+											<li class="sortable-item">
+												<input type="checkbox" name="site[]" id="<?php echo $btn ?>" value="<?php echo $btn ?>" <?php if ($checked) echo 'checked' ?> />					
+												<label for="<?php echo $btn ?>" class="wpsl-label"><?php echo $label[$btn] ?></label>
+											</li>				
+											<?php
 										}
 									?>							
 								</ul>
@@ -376,7 +422,7 @@ class wpsociallikes
 		
 					</table>
 					<div class="row">
-						<div id="preview" class="shadow-border"></div>
+						<div id="preview" class="shadow-border" <?php if (get_bloginfo('language') == 'ru-RU') echo 'language="ru"' ?> ></div>
 					</div>
 					<input type="hidden" name="action" value="update" />
 					<input type="hidden" name="page_options" value="sociallikes_ul" />
