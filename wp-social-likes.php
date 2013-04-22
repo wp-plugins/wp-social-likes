@@ -2,7 +2,7 @@
 /*
 Plugin Name: Social Likes
 Description: Wordpress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/projects/social-likes)
-Version: 1.2
+Version: 1.3
 Author: TS Soft
 Author URI: http://ts-soft.ru/en/
 License: MIT
@@ -188,6 +188,7 @@ class wpsociallikes
 		if ((is_page() || is_single() || !preg_match('/<!--more(.*?)?-->/', $post_content, $matches)) && get_post_meta($post->ID, 'sociallikes', true))
 		{
 			$buttons = get_option('sociallikes_ul');
+			$buttons = str_replace('class="social-likes"', 'class="social-likes" data-title="'.$post->post_title.'"', $buttons);
 			$img_url = get_post_meta($post->ID, 'sociallikes_img_url', true);
 			if (strstr($buttons, 'Pinterest') && $img_url != '') {
 				$parts = explode('data-media="', $buttons);
