@@ -20,6 +20,9 @@ WordPress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/pr
 
 == Changelog ==
 
+= 1.3 =
+ * Default message text based on the title of page/post being shared (Feedback from Yevgen Timashov)
+
 = 1.2 =
  * Smarter appearance of buttons: if post doesn't contain "more" tag, they will appear both on single post page and on page with multiple posts
  * English and Russian tooltips for share buttons depending on language of current page/post
