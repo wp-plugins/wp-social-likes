@@ -20,6 +20,10 @@ WordPress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/pr
 
 == Changelog ==
 
+= 1.4 =
+ * Option to place first image in the post/page to the Image URL field (required by Pinterest)
+ * Russian social network buttons now available for English version of WordPress
+
 = 1.3 =
  * Default message text based on the title of page/post being shared (Feedback from Yevgen Timashov)
 
