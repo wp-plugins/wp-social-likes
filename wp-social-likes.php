@@ -2,7 +2,7 @@
 /*
 Plugin Name: Social Likes
 Description: Wordpress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/projects/social-likes)
-Version: 1.7
+Version: 1.8
 Author: TS Soft
 Author URI: http://ts-soft.ru/en/
 License: MIT
@@ -99,6 +99,9 @@ class wpsociallikes
 	
 	function header_content() {
 		$skin = str_replace('light', '', get_option('sociallikes_skin'));
+		if (($skin != 'classic') && ($skin != 'flat') && ($skin != 'birman')) { // backward compatibility
+			$skin = 'classic';
+		}
 		?>
 			<link rel="stylesheet" id="styleClassic" href="<?php echo plugin_dir_url(__FILE__) ?>css/social-likes_<?php echo $skin ?>.css">
 			<script src="<?php echo plugin_dir_url(__FILE__) ?>js/social-likes.min.js"></script>
@@ -329,7 +332,13 @@ class wpsociallikes
 		if (strpos($skin, 'light')) {
 		    $light = true;
 		} else if ($lightOption) {
-            $skin .= 'light';
+		    $light = true;
+			if ($skin == 'flat') {
+				$skin .= 'light';
+			}
+		}
+		if (($skin != 'classic') && ($skin != 'flat') && ($skin != 'flatlight') && ($skin != 'birman')) { // backward compatibility
+			$skin = 'classic';
 		}
 		$zeroes = get_option('sociallikes_zeroes');
 		$icons = get_option('sociallikes_icons');

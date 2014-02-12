@@ -26,7 +26,7 @@ Features:
  * Easy to install
  * All buttons in a single style
  * Four different skins give 11 different looks for social buttons 
- * Won't explode your page's layout
+ * Won’t explode your page’s layout
  * Much faster than proprietary social buttons
  * Likes counters can be shown for each social network
  * Buttons can be reordered easily
@@ -48,6 +48,9 @@ Based on the Social Likes library by Artem Sapegin (http://sapegin.me/projects/s
 3. Button style customization with 4 skins, "Icons only" and "Single button" modes
 
 == Changelog ==
+
+= 1.8 =
+ * Fixed bug with interactive preview reset
 
 = 1.7 =
  * Translations: English, Russian
@@ -80,5 +83,3 @@ Based on the Social Likes library by Artem Sapegin (http://sapegin.me/projects/s
 
 = 1.0 =
  * First release
- 
- 
