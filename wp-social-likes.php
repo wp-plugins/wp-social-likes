@@ -2,7 +2,7 @@
 /*
 Plugin Name: Social Likes
 Description: Wordpress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/projects/social-likes)
-Version: 1.8
+Version: 1.9
 Author: TS Soft
 Author URI: http://ts-soft.ru/en/
 License: MIT
@@ -48,9 +48,8 @@ class wpsociallikes
 		add_option('pos3', 'twitter_btn');
 		add_option('pos4', 'google_btn');
 		add_option('pos5', 'pinterest_btn');
-		//add_option('pos6', 'lj_btn');
-		add_option('pos7', 'odn_btn');
-		add_option('pos8', 'mm_btn');
+		add_option('pos6', 'odn_btn');
+		add_option('pos7', 'mm_btn');
 		add_option('sociallikes_counters', true);
 		add_option('sociallikes_look', 'h');
 		add_option('sociallikes_twitter_via');
@@ -62,6 +61,8 @@ class wpsociallikes
 		add_option('sociallikes_light', false); // Deprecated
 		add_option('sociallikes_icons', false);
 		add_option('sociallikes_zeroes', false);
+		add_option('sociallikes_customlocale', '');
+		add_option('sociallikes_placement', 'after');
 		
 		add_action('init', array(&$this, 'ap_action_init'));
 		add_action('wp_head', array(&$this, 'header_content'));
@@ -77,7 +78,15 @@ class wpsociallikes
 	}
 	
 	function ap_action_init() {
-		load_plugin_textdomain('wp-social-likes', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
+		$customLocale = get_option('sociallikes_customlocale');
+		$textdomainError = false;
+		if ($customLocale != '') {
+			$textdomainError =
+				!load_textdomain('wp-social-likes', plugin_dir_path( __FILE__ ).'/languages/wp-social-likes-'.$customLocale.'.mo');
+		}
+		if (($customLocale == '') || $textdomainError) {
+			load_plugin_textdomain('wp-social-likes', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
+		}
 		$this->title_vkontakte = __('Share link on VK', 'wp-social-likes');
 		$this->title_facebook = __('Share link on Facebook', 'wp-social-likes');
 		$this->title_twitter = __('Share link on Twitter', 'wp-social-likes');
@@ -99,7 +108,7 @@ class wpsociallikes
 	
 	function header_content() {
 		$skin = str_replace('light', '', get_option('sociallikes_skin'));
-		if (($skin != 'classic') && ($skin != 'flat') && ($skin != 'birman')) { // backward compatibility
+		if (($skin != 'classic') && ($skin != 'flat') && ($skin != 'birman')) {
 			$skin = 'classic';
 		}
 		?>
@@ -217,7 +226,17 @@ class wpsociallikes
 			if (!is_single() && !is_page()) {
 				$buttons = str_replace(' data-counters', ' data-url="'.get_permalink( $post->ID ).'" data-counters', $buttons);
 			}
-			$content .= $buttons;
+			$placement = get_option('sociallikes_placement');
+			if ($placement == 'before') {
+				$content = $buttons . $content;
+			} else if ($placement == 'before-after') {
+				$content = $buttons . $content . $buttons;
+			} else {
+				$content .= $buttons;
+				if ($placement != 'after') {
+					update_option('sociallikes_placement', 'after');
+				}
+			}
 		}
 		return $content;
 	}
@@ -337,7 +356,7 @@ class wpsociallikes
 				$skin .= 'light';
 			}
 		}
-		if (($skin != 'classic') && ($skin != 'flat') && ($skin != 'flatlight') && ($skin != 'birman')) { // backward compatibility
+		if (($skin != 'classic') && ($skin != 'flat') && ($skin != 'flatlight') && ($skin != 'birman')) {
 			$skin = 'classic';
 		}
 		$zeroes = get_option('sociallikes_zeroes');
@@ -378,6 +397,7 @@ class wpsociallikes
 					<input id="label_odnoklassniki" type="hidden" value="<?php echo $this->label_odnoklassniki ?>">
 					<input id="label_mailru" type="hidden" value="<?php echo $this->label_mailru ?>">
 					<input id="label_share" type="hidden" value="<?php echo $this->label_share ?>">
+					<input id="confirm_leaving_message" type="hidden" value="<?php _e('You have unsaved changes on this page. Do you want to leave this page and discard your changes?', 'wp-social-likes') ?>">
 					
 					<table class="plugin-setup">
 						<tr valign="top">
@@ -464,9 +484,9 @@ class wpsociallikes
 							</td>
 						</tr>
 						<!--tr valign="top">
-							<th scope="row"><?php _e('Twitter Related', 'wp-social-likes') ?></th>
+							<th scope="row">Twitter Related</th>
 							<td>
-								<input type="text" name="twitter_rel" placeholder="<?php _e('Username:Description', 'wp-social-likes') ?>" class="wpsl-field" 
+								<input type="text" name="twitter_rel" placeholder="Username:Description" class="wpsl-field" 
 									value="<?php echo get_option('sociallikes_twitter_rel'); ?>"/>
 							</td>
 						</tr-->
