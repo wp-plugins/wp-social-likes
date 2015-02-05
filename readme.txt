@@ -3,7 +3,7 @@ Contributors: tssoft
 Tags: facebook, twitter, vk.com, vkontakte, google+, pinterest, odnoklassniki, mail.ru, social links, share buttons, social, social buttons, jquery
 Requires at least: 3.0
 Tested Up To: 4.1
-Stable tag: 5.1.26
+Stable tag: 5.2.5
 License: MIT
 License URI: https://raw.github.com/tssoft/wp-social-likes/master/license.md
 
@@ -108,6 +108,11 @@ $post_id is an optional argument. You can specify it to get the buttons for a ce
 
 
 == Changelog ==
+
+= 5.2.5 =
+ * Added custom LinkedIn button
+ * Added new vector icon for the LiveJournal button
+ * Fixed bug with rectangular areas appearing under social likes buttons
 
 = 5.1.26 =
  * Added button for sharing via E-mail
