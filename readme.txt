@@ -2,8 +2,8 @@
 Contributors: tssoft
 Tags: facebook, twitter, vk.com, vkontakte, google+, pinterest, odnoklassniki, mail.ru, social links, share buttons, social, social buttons, jquery
 Requires at least: 3.0
-Tested Up To: 4.1
-Stable tag: 5.2.5
+Tested Up To: 4.1.2
+Stable tag: 5.5.7
 License: MIT
 License URI: https://raw.github.com/tssoft/wp-social-likes/master/license.md
 
@@ -95,9 +95,9 @@ Yes. You should just enable this hidden feature on the WordPress advanced option
 Yes, after the Social Likes plugin is activated, you can use these two functions in your themes:
 
  * *social_likes( $post_id )* - displays Social Likes buttons
- * *get_social_likes( $post_id )* - returns the buttons as string
+ * *get_social_likes( $post_id )* - returns buttons as string
 
-$post_id is an optional argument. You can specify it to get the buttons for a certain post.
+$post_id is an optional argument. You can use it to get buttons for a specific post.
 
 
 == Screenshots ==
@@ -108,6 +108,11 @@ $post_id is an optional argument. You can specify it to get the buttons for a ce
 
 
 == Changelog ==
+
+= 5.5.7 =
+ * Fixed bug with social buttons appearing inside third party recent posts widgets (Reported by rollo3000)
+ * Fixed: if sociallikes_customlocale is set to en_US, plugin still uses default locale of WordPress
+ * Added Tatar translation (Thanks to Albert Fazli)
 
 = 5.2.5 =
  * Added custom LinkedIn button

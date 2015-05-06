@@ -2,12 +2,12 @@
 /*
 Plugin Name: Social Likes
 Description: Wordpress plugin for Social Likes library by Artem Sapegin (http://sapegin.me/projects/social-likes)
-Version: 5.2.5
+Version: 5.5.7
 Author: TS Soft
 Author URI: http://ts-soft.ru/en/
 License: MIT
 
-Copyright 2014-2015 TS Soft LLC (email: dev@ts-soft.ru )
+Copyright 2014 TS Soft LLC (email: dev@ts-soft.ru )
 
 Permission is hereby granted, free of charge, to any person obtaining a 
 copy of this software and associated documentation files (the 
@@ -76,13 +76,10 @@ class wpsociallikes
 
 	function ap_action_init() {
 		$this->load_options();
-		$customLocale = $this->options['customLocale'];
-		$textdomainError = false;
-		if ($customLocale != '') {
-			$textdomainError =
-				!load_textdomain('wp-social-likes', plugin_dir_path( __FILE__ ).'/languages/wp-social-likes-'.$customLocale.'.mo');
-		}
-		if (($customLocale == '') || $textdomainError) {
+		$custom_locale = $this->options['customLocale'];
+		if ($custom_locale) {
+			load_textdomain('wp-social-likes', plugin_dir_path( __FILE__ ).'/languages/wp-social-likes-'.$custom_locale.'.mo');
+		} else {
 			load_plugin_textdomain('wp-social-likes', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');
 		}
 		$this->title_vkontakte = __('Share link on VK', 'wp-social-likes');
@@ -190,16 +187,18 @@ class wpsociallikes
 
 		?>
 			<div id="social-likes">
+				<input type="hidden" name="wpsociallikes_update_meta" value="true" />
+
 				<div style="padding: 5px 0">
-					<input type="checkbox" name="wpsociallikes" id="wpsociallikes" <?php if ($checked) echo 'checked class="checked"' ?> title="<?php echo get_permalink($post->ID); ?>" />
-					<label for="wpsociallikes"><?php _e('Add social buttons', 'wp-social-likes') ?></label>
+					<input type="checkbox" name="wpsociallikes_enabled" id="wpsociallikes_enabled" <?php if ($checked) echo 'checked class="checked"' ?> title="<?php echo get_permalink($post->ID); ?>" />
+					<label for="wpsociallikes_enabled"><?php _e('Add social buttons', 'wp-social-likes') ?></label>
 				</div>
 
 				<table>
 					<tr>
-						<td><label for="image_url" style="padding-right:5px"><?php _e('Image&nbspURL:', 'wp-social-likes') ?></label></td>
+						<td><label for="wpsociallikes_image_url" style="padding-right:5px"><?php _e('Image&nbspURL:', 'wp-social-likes') ?></label></td>
 						<td style="width:100%">
-							<input name="image_url" id="image_url" value="<?php echo $img_url ?>" <?php if (!$checked) echo 'disabled' ?> type="text" placeholder="<?php _e('Image URL (required for Pinterest)', 'wp-social-likes') ?>" style="width:100%" />
+							<input name="wpsociallikes_image_url" id="wpsociallikes_image_url" value="<?php echo $img_url ?>" <?php if (!$checked) echo 'disabled' ?> type="text" placeholder="<?php _e('Image URL (required for Pinterest)', 'wp-social-likes') ?>" style="width:100%" />
 						</td>
 					</tr>
 				</table>
@@ -207,13 +206,21 @@ class wpsociallikes
 
 			<script>
 				(function($) {
-					$('input#wpsociallikes').change(function () {
-						$(this).toggleClass('checked');
-						if ($(this).hasClass('checked')) {
-							$('#image_url').removeAttr('disabled');
+					var savedImageUrlValue = '';
+					$('input#wpsociallikes_enabled').change(function () {
+						var $this = $(this);
+						$this.toggleClass('checked');
+						var socialLikesEnabled = $this.hasClass('checked');
+						var imageUrlField = $('#wpsociallikes_image_url');
+						if (socialLikesEnabled) {
+							imageUrlField
+								.removeAttr('disabled')
+								.val(savedImageUrlValue);
 						} else {
-							$('#image_url').attr('value', '');
-							$('#image_url').attr('disabled', 'disabled');
+							savedImageUrlValue = imageUrlField.val();
+							imageUrlField
+								.attr('disabled', 'disabled')
+								.val('');
 						}
 					});	
 				})( jQuery );
@@ -227,7 +234,7 @@ class wpsociallikes
 	}
 
 	function save_post_meta($post_id) {
-		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		if (!isset($_POST['wpsociallikes_update_meta']) || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) {
 			return;
 		}
 
@@ -241,29 +248,23 @@ class wpsociallikes
 			}
 		}
 
-		update_post_meta($post_id, 'sociallikes', isset($_POST['wpsociallikes']));
-		if (($_POST['image_url'] == "") && $this->options['pinterestImg']) {
-			$img_url = "";
+		update_post_meta($post_id, 'sociallikes', isset($_POST['wpsociallikes_enabled']));
+
+		$img_url_sent = isset($_POST['wpsociallikes_image_url']);
+		$img_url = $img_url_sent ? $_POST['wpsociallikes_image_url'] : '';
+		if ($img_url_sent && $img_url == '' && $this->options['pinterestImg']) {
 			$post = get_post($post_id);
 			$img_url = $this->get_post_first_img($post); 
-			update_post_meta($post_id, 'sociallikes_img_url', $img_url);
 		}
-		else {
-			update_post_meta($post_id, 'sociallikes_img_url', $_POST['image_url']);
-		}
+		update_post_meta($post_id, 'sociallikes_img_url', $img_url);
 	}
 
 	function add_social_likes($content = '') {
-		global $post, $page, $pages;
-		$post_content = $pages[$page - 1];
-		$this->lang = get_bloginfo('language');
-		$moreTagExists = preg_match('/<!--more(.*?)?-->/', $post_content, $matches);
-		if ((is_page() || is_single()
-			|| !$moreTagExists || $this->options['excerpts'])
-			&& get_post_meta($post->ID, 'sociallikes', true))
-		{
+		global $post;
+		if (in_the_loop() && get_post_meta($post->ID, 'sociallikes', true)
+				&& (is_page() || is_single() || $this->options['excerpts'] || !$this->is_post_with_excerpt())) {
+			$this->lang = get_bloginfo('language');
 			$buttons = $this->build_buttons($post);
-
 			$placement = $this->options['placement'];
 			if ($placement != 'none') {
 				if ($placement == 'before') {
@@ -275,8 +276,13 @@ class wpsociallikes
 				}
 			}
 		}
-
 		return $content;
+	}
+
+	function is_post_with_excerpt() {
+		global $page, $pages;
+		$post_content = $pages[$page - 1];
+		return preg_match('/<!--more(.*?)?-->/', $post_content);
 	}
 
 	function build_buttons($post) {
